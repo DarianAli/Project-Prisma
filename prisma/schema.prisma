@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum status {
+  SUDAH
+  BELUM
+  MENUNGGU
+}
+
+enum category {
+  SAPI
+  KAMBING
+  PILIH
+}
+
+model admin{
+  idAdmin             Int               @id @default(autoincrement())
+  pass                String            @default("")
+  username            String            @default("")
+  nama                String            @default("")
+  uuid                String            @unique @default("")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+}
+
+model pelanggan {
+  idPelanggan         Int               @id @default(autoincrement())
+  nama                String            @default("")
+  username            String            @default("")
+  password            String            @default("")
+  alamat              String            @default("") @db.Text
+  nomorHp             Int               @default(0)
+  email               String            @unique @default("")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  transaksi           transaksi[]
+}
+
+model penjual {
+  idPenjual           Int               @id @default(autoincrement())
+  nama                String            @default("")
+  username            String            @default("")
+  password            String            @default("")
+  alamat              String            @default("") @db.Text
+  nomorHp             Int               @default(0)
+  email               String            @unique @default("")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  hewan               hewan[]
+}
+
+model hewan {
+  idHewan             Int               @id @default(autoincrement())
+  berat               Int               @default(0)
+  umur                Int               @default(0)
+  harga               Int               @default(0)
+  kategori            category          @default(PILIH)
+  jenis               String            @default("")
+  foto                String            @default("")
+  idPenjual           penjual?          @relation(fields: [penjualId], references: [idPenjual])
+  penjualId           Int?
+  uuid                String            @unique @default("")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  transaksi           transaksi[]
+  detailTransaksi     detailTransaksi[]
+}
+
+model transaksi {
+  idTransaksi         Int               @id @default(autoincrement())
+  tglTransaksi        DateTime          @default(now())
+  idCustomer          pelanggan?        @relation(fields: [pelangganId], references: [idPelanggan])
+  pelangganId         Int?      
+  total               Int               @default(0)
+  status              status            @default(MENUNGGU)
+  hewan               hewan?            @relation(fields: [hewanId], references: [idHewan])
+  hewanId             Int?
+  uuid                String            @unique @default("")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  detailTransaksi     detailTransaksi[]
+}
+
+model detailTransaksi {
+  idDetail            Int               @id @default(autoincrement())
+  idTransaksi         transaksi?        @relation(fields: [transaksiId], references: [idTransaksi])
+  transaksiId         Int?
+  idHewan             hewan?            @relation(fields: [hewanId], references: [idHewan])
+  hewanId             Int?          
+  jumlah              Int               @default(0)
+  uuid                String            @unique @default("")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+}
+
