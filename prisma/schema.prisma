@@ -13,95 +13,51 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum role{
+  ADMIN
+  USER
+}
+
+
+
 enum status {
-  SUDAH
-  BELUM
+  DIKEMBALIKAN
+  TELAT
   MENUNGGU
 }
 
-enum category {
-  SAPI
-  KAMBING
-  PILIH
+model barang {
+  idBarang        Int        @id @default(autoincrement())
+  nama            String     @default("")
+  kategori        String   @default("")
+  lokasi          String     @default("")
+  quantity        Int        @default(0)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt()
+  borrow          borrow[]
 }
 
-model admin{
-  idAdmin             Int               @id @default(autoincrement())
-  pass                String            @default("")
-  username            String            @default("")
-  nama                String            @default("")
-  uuid                String            @unique @default("")
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+model user{
+  idUser          Int        @id @default(autoincrement())
+  username        String     @default("") @unique
+  role            role       @default(USER)
+  password        String     @default("")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt()
+  borrow          borrow[]
 }
 
-model pelanggan {
-  idPelanggan         Int               @id @default(autoincrement())
-  nama                String            @default("")
-  username            String            @default("")
-  password            String            @default("")
-  alamat              String            @default("") @db.Text
-  nomorHp             Int               @default(0)
-  email               String            @unique @default("")
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  transaksi           transaksi[]
+model borrow{
+  idBorrow        Int       @id @default(autoincrement())
+  User_id         user?     @relation(fields: [user], references: [idUser])
+  user            Int?   
+  barang_id       barang?   @relation(fields: [barang], references: [idBarang])
+  barang          Int?
+  jumlah          Int       @default(0)
+  statusPinjam    status    @default(DIKEMBALIKAN)
+  tanggalPinjam   DateTime  @default(now())
+  tanggalKembali   DateTime?
+  actualReturnDate DateTime?
+  actualReturnQuantity  Int @default(0)
+  createdAt       DateTime  @default(now())
 }
-
-model penjual {
-  idPenjual           Int               @id @default(autoincrement())
-  nama                String            @default("")
-  username            String            @default("")
-  password            String            @default("")
-  alamat              String            @default("") @db.Text
-  nomorHp             Int               @default(0)
-  email               String            @unique @default("")
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  hewan               hewan[]
-}
-
-model hewan {
-  idHewan             Int               @id @default(autoincrement())
-  berat               Int               @default(0)
-  umur                Int               @default(0)
-  harga               Int               @default(0)
-  kategori            category          @default(PILIH)
-  jenis               String            @default("")
-  foto                String            @default("")
-  idPenjual           penjual?          @relation(fields: [penjualId], references: [idPenjual])
-  penjualId           Int?
-  uuid                String            @unique @default("")
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  transaksi           transaksi[]
-  detailTransaksi     detailTransaksi[]
-}
-
-model transaksi {
-  idTransaksi         Int               @id @default(autoincrement())
-  tglTransaksi        DateTime          @default(now())
-  idCustomer          pelanggan?        @relation(fields: [pelangganId], references: [idPelanggan])
-  pelangganId         Int?      
-  total               Int               @default(0)
-  status              status            @default(MENUNGGU)
-  hewan               hewan?            @relation(fields: [hewanId], references: [idHewan])
-  hewanId             Int?
-  uuid                String            @unique @default("")
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  detailTransaksi     detailTransaksi[]
-}
-
-model detailTransaksi {
-  idDetail            Int               @id @default(autoincrement())
-  idTransaksi         transaksi?        @relation(fields: [transaksiId], references: [idTransaksi])
-  transaksiId         Int?
-  idHewan             hewan?            @relation(fields: [hewanId], references: [idHewan])
-  hewanId             Int?          
-  jumlah              Int               @default(0)
-  uuid                String            @unique @default("")
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-}
-
